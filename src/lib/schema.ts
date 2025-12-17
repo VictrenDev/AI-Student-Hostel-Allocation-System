@@ -1,0 +1,86 @@
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
+
+/** ===== ENUMS ===== */
+export const genderEnum = ["male", "female"] as const;
+export const levelEnum = ["100", "200", "300", "400", "500"] as const;
+
+export const chronotypeEnum = ["morning", "evening", "flexible"] as const;
+export const noiseEnum = ["low", "medium", "high"] as const;
+export const sociabilityEnum = ["introvert", "ambivert", "extrovert"] as const;
+export const focusEnum = ["deep", "moderate", "light"] as const;
+
+/** ===== TYPES ===== */
+export type QuestionnaireResponse = {
+  questionId: string;
+  answer: string | number | boolean;
+};
+
+/** ===== TABLES ===== */
+export const students = sqliteTable("students", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  uuid: text("uuid").notNull().unique(),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
+  gender: text("gender", { enum: genderEnum }).notNull(),
+  level: text("level", { enum: levelEnum }).notNull(),
+  matricNo: text("matriculation_number").notNull(),
+  createdAt: text("created_at").$type<string>().notNull(),
+});
+
+export const questionnaireResponses = sqliteTable("questionnaire_responses", {
+  studentId: integer("student_id")
+    .notNull()
+    .references(() => students.id),
+  responses: text("responses").$type<QuestionnaireResponse[]>().notNull(),
+  submittedAt: text("submitted_at").$type<string>().notNull(),
+});
+
+export const aiTraits = sqliteTable("ai_traits", {
+  studentId: integer("student_id")
+    .notNull()
+    .references(() => students.id),
+  chronotype: text("chronotype", { enum: chronotypeEnum }).notNull(),
+  noiseSensitivity: text("noise_sensitivity", { enum: noiseEnum }).notNull(),
+  sociability: text("sociability", { enum: sociabilityEnum }).notNull(),
+  studyFocus: text("study_focus", { enum: focusEnum }).notNull(),
+  generatedAt: text("generated_at").$type<string>().notNull(),
+});
+
+export const rooms = sqliteTable("rooms", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  capacity: integer("capacity").notNull(),
+  gender: text("gender", { enum: genderEnum }).notNull(),
+});
+
+export const allocations = sqliteTable("allocations", {
+  roomId: integer("room_id")
+    .notNull()
+    .references(() => rooms.id),
+  studentId: integer("student_id")
+    .notNull()
+    .references(() => students.id),
+  compatibilityScore: integer("compatibility_score").notNull(),
+  explanation: text("explanation"),
+  allocatedAt: text("allocated_at").$type<string>().notNull(),
+});
+
+/** ===== INFERRED TYPES ===== */
+export type Student = InferSelectModel<typeof students>;
+export type NewStudent = InferInsertModel<typeof students>;
+
+export type QuestionnaireResponseRow = InferSelectModel<
+  typeof questionnaireResponses
+>;
+export type NewQuestionnaireResponse = InferInsertModel<
+  typeof questionnaireResponses
+>;
+
+export type AITrait = InferSelectModel<typeof aiTraits>;
+export type NewAITrait = InferInsertModel<typeof aiTraits>;
+
+export type Room = InferSelectModel<typeof rooms>;
+export type NewRoom = InferInsertModel<typeof rooms>;
+
+export type Allocation = InferSelectModel<typeof allocations>;
+export type NewAllocation = InferInsertModel<typeof allocations>;
