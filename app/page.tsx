@@ -4,20 +4,6 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-gray-50 text-slate-800">
-      {/* Header */}
-      <header className="absolute top-0 left-0 w-full z-50">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-slate-800 text-white flex items-center justify-center font-bold text-xl">
-              H
-            </div>
-            <span className="text-2xl font-bold">
-              Hostel<span className="text-blue-600">Ease</span>
-            </span>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="relative flex items-center min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
         <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-20">
@@ -38,10 +24,10 @@ export default function HomePage() {
             </p>
 
             <Link
-              href="/register"
+              href="/login"
               className="inline-flex items-center gap-2 mt-10 px-10 py-4 rounded-full text-white font-semibold bg-gradient-to-r from-(--color-primary-500) to-(--color-primary-700) shadow-lg hover:opacity-90 transition"
             >
-              Register Now
+              Login to your account
             </Link>
 
             {/* Features */}

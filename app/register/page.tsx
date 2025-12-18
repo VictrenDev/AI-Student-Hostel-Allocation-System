@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { registrationSchema } from "@/src/zod/register-student";
 import z from "zod";
 import registerStudent from "@/src/actions/register-students";
+import Link from "next/link";
 
 type FormValues = z.infer<typeof registrationSchema>;
 
@@ -94,24 +95,16 @@ export default function RegistrationPage() {
 
   return (
     <>
-      {/* Header */}
-      <header className="absolute top-0 left-0 w-full z-50 p-6 transition-all bg-transparent">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex items-center justify-center font-bold rounded-lg w-10 h-10 text-white"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              H
-            </div>
-            <div className="text-2xl font-bold text-[var(--color-primary-700)]">
-              Hostel
-              <span className="text-[var(--color-primary-500)]">Ease</span>
-            </div>
-          </div>
+      <header className="absolute top-0 left-0 w-full z-50">
+        <div className="max-w-6xl mx-auto px-6 py-6 flex justify-end items-center">
+          <Link
+            href="/login"
+            className="ml-auto text-[var(--color-primary-500)] hover:text-[var(--color-primary-600)] transition-colors"
+          >
+            ← Back to Login
+          </Link>
         </div>
       </header>
-
       {/* Main */}
       <section
         className="min-h-screen flex items-center relative overflow-hidden"

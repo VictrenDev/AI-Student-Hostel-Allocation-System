@@ -56,6 +56,18 @@ export default function HostelQuestionnaire() {
     academicGoals: "",
     libraryFrequency: "",
   });
+  const logout = async () => {
+    try {
+      const res = await fetch("/api/logout", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        // Optionally redirect to login
+        window.location.href = "/login";
+      }
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
 
   const allHobbies = [
     { id: "gaming", label: "Gaming", icon: <Target size={16} /> },
@@ -461,25 +473,12 @@ export default function HostelQuestionnaire() {
     <>
       {/* Header */}
       <header className="absolute top-0 left-0 w-full z-50 p-6 transition-all bg-transparent">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex items-center justify-center font-bold rounded-lg w-10 h-10 text-white"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              H
-            </div>
-            <div className="text-2xl font-bold text-[var(--color-primary-700)]">
-              Hostel
-              <span className="text-[var(--color-primary-500)]">Ease</span>
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto flex justify-end items-center">
           <div className="text-[var(--color-primary-500)] font-medium">
-            AI Matching Questionnaire
+            <button onClick={() => logout()}>Logout</button>
           </div>
         </div>
       </header>
-
       {/* Main Section */}
       <section
         className="min-h-screen flex items-center relative overflow-hidden pt-24"

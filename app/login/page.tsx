@@ -6,11 +6,12 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { loginStudent } from "@/src/actions/login-student";
 import { setStudentCookie } from "@/src/helpers/set-cookie";
+import { useRouter } from "next/navigation";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  // const [submitted, setSubmitted] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +39,7 @@ export default function SignInPage() {
       }
       setLoading(false);
       toast.success("Logged in successfully");
+      router.push("/dashboard");
     } catch (error) {
       toast.error("An error occurred");
       setLoading(false);
@@ -49,19 +51,7 @@ export default function SignInPage() {
       <main className="relative min-h-screen overflow-hidden">
         {/* Header */}
         <header className="absolute top-0 left-0 w-full z-50">
-          <div className="max-w-6xl mx-auto px-6 py-6 flex items-center">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-lg text-white flex items-center justify-center font-bold"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                H
-              </div>
-              <span className="text-2xl font-bold text-[var(--color-primary-700)]">
-                Hostel
-                <span className="text-[var(--color-primary-500)]">Ease</span>
-              </span>
-            </div>
+          <div className="max-w-6xl mx-auto px-6 py-6 flex justify-end items-center">
             <Link
               href="/"
               className="ml-auto text-[var(--color-primary-500)] hover:text-[var(--color-primary-600)] transition-colors"

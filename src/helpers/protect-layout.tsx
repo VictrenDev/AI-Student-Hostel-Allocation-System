@@ -8,9 +8,5 @@ export default async function ProtectLayout({
 }) {
   const cookieStore = await cookies();
   const session = cookieStore.get("student_uuid");
-  if (!session) {
-    throw new Error("Failed to fetch session");
-  }
-
   return <>{children}</>;
 }
