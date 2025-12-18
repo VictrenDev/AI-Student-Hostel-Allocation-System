@@ -2,42 +2,30 @@
 
 import { db } from "@/src/lib/database";
 import { students, Student } from "@/src/lib/schema";
-import { registrationSchema } from "../zod/register-student";
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
-import { cookies } from "next/headers";
+import { registrationServerSchema } from "../zod/registeration-server";
+
 type RegisterStudentReturnType =
   | { success: true; message: string; student: Student; studentUuid: string }
   | { success: false; error: string };
 
-type RegisterStudentInput = z.infer<typeof registrationSchema>;
-// type StudentInsert = Omit<RegisterStudentInput, "level"> & { level: "100" | "200" | "300" | "400" | "500" };
+type RegisterStudentInput = z.infer<typeof registrationServerSchema>;
 
 const registerStudent = async (
   input: unknown,
 ): Promise<RegisterStudentReturnType> => {
-  const parsedData = registrationSchema.safeParse(input);
+  const parsed = registrationServerSchema.safeParse(input);
 
-  if (!parsedData.success) {
-    return {
-      success: false,
-      error: "Data could not be passed sucessfully",
-    };
+  if (!parsed.success) {
+    return { success: false, error: "Invalid registration data" };
   }
-  const data: RegisterStudentInput = parsedData.data;
+
+  const data: RegisterStudentInput = parsed.data;
   const studentUuid = uuidv4();
-  const levelMap: Record<
-    RegisterStudentInput["level"],
-    "100" | "200" | "300" | "400" | "500"
-  > = {
-    freshman: "100",
-    sophomore: "200",
-    junior: "300",
-    senior: "400",
-    postgrad: "500",
-  };
+
   try {
-    const [student] = await db
+    const result = await db
       .insert(students)
       .values({
         name: data.name,
@@ -45,10 +33,16 @@ const registerStudent = async (
         gender: data.gender,
         matricNo: data.matricNo,
         email: data.email,
-        level: levelMap[data.level],
+        level: data.level,
         createdAt: new Date().toISOString(),
       })
       .returning();
+
+    const student = result[0];
+
+    if (!student) {
+      return { success: false, error: "Student creation failed" };
+    }
 
     return {
       success: true,
@@ -58,11 +52,7 @@ const registerStudent = async (
     };
   } catch (error) {
     console.error("Error registering student", error);
-
-    return {
-      success: false,
-      error: "Internal server error",
-    };
+    return { success: false, error: "Internal server error" };
   }
 };
 

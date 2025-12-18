@@ -43,20 +43,12 @@ export default function RegistrationPage() {
     }, 100);
   };
 
-  const levelMap: Record<FormValues["level"], string> = {
-    freshman: "100",
-    sophomore: "200",
-    junior: "300",
-    senior: "400",
-    postgrad: "500",
-  };
-
   const handleConfirm = async (data: FormValues) => {
     try {
       setLoading(true);
       // Map level before sending
-      const payload = { ...data, level: levelMap[data.level] };
-
+      const payload = { ...data };
+      console.log(payload);
       const newStudentResponse = await registerStudent(payload);
       if (!newStudentResponse.success) {
         throw new Error(newStudentResponse.error);
