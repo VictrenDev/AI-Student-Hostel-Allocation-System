@@ -28,11 +28,24 @@ export const students = sqliteTable("students", {
   createdAt: text("created_at").$type<string>().notNull(),
 });
 
+// export const questionnaireResponses = sqliteTable("questionnaire_responses", {
+//   studentId: integer("student_id")
+//     .notNull()
+//     .references(() => students.id),
+//   responses: text("responses", { mode: "json" })
+//     .$type<QuestionnaireResponse[]>()
+//     .notNull(), // FIXED
+//   submittedAt: text("submitted_at").$type<string>().notNull(),
+// });
+
+// src/lib/schema.ts
 export const questionnaireResponses = sqliteTable("questionnaire_responses", {
   studentId: integer("student_id")
     .notNull()
     .references(() => students.id),
-  responses: text("responses").$type<QuestionnaireResponse[]>().notNull(),
+  responses: text("responses", { mode: "json" })
+    .$type<QuestionnaireResponse[]>()
+    .notNull(), // mode: 'json'
   submittedAt: text("submitted_at").$type<string>().notNull(),
 });
 
@@ -40,10 +53,10 @@ export const aiTraits = sqliteTable("ai_traits", {
   studentId: integer("student_id")
     .notNull()
     .references(() => students.id),
-  chronotype: text("chronotype", { enum: chronotypeEnum }).notNull(),
-  noiseSensitivity: text("noise_sensitivity", { enum: noiseEnum }).notNull(),
-  sociability: text("sociability", { enum: sociabilityEnum }).notNull(),
-  studyFocus: text("study_focus", { enum: focusEnum }).notNull(),
+  chronotype: integer("chronotype").notNull(),
+  noiseSensitivity: integer("noise_sensitivity").notNull(),
+  sociability: integer("sociability").notNull(),
+  studyFocus: integer("study_focus").notNull(),
   generatedAt: text("generated_at").$type<string>().notNull(),
 });
 

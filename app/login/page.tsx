@@ -39,7 +39,7 @@ export default function SignInPage() {
       }
       setLoading(false);
       toast.success("Logged in successfully");
-      router.push("/dashboard");
+      router.push("/questionaire");
     } catch (error) {
       toast.error("An error occurred");
       setLoading(false);

@@ -1,3 +1,4 @@
+"use server";
 import { cookies } from "next/headers";
 import { db } from "@/src/lib/database";
 import { students } from "@/src/lib/schema";
@@ -5,8 +6,8 @@ import { eq } from "drizzle-orm";
 
 export const getCurrentStudent = async () => {
   const cookieStore = await cookies();
-  const studentUuid = cookieStore.get("studentUuid")?.value;
-
+  const studentUuid = cookieStore.get("student_uuid")?.value;
+  console.log(studentUuid);
   if (!studentUuid) return null;
 
   const [student] = await db

@@ -21,6 +21,8 @@ import {
   Target,
   Users,
 } from "lucide-react";
+import Logout from "../_components/logout";
+import { submitQuestionnaire } from "@/src/actions/submt-questionaire";
 
 export default function HostelQuestionnaire() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -56,18 +58,6 @@ export default function HostelQuestionnaire() {
     academicGoals: "",
     libraryFrequency: "",
   });
-  const logout = async () => {
-    try {
-      const res = await fetch("/api/logout", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        // Optionally redirect to login
-        window.location.href = "/login";
-      }
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
-  };
 
   const allHobbies = [
     { id: "gaming", label: "Gaming", icon: <Target size={16} /> },
@@ -313,47 +303,49 @@ export default function HostelQuestionnaire() {
 
   const handleSubmit = async () => {
     setLoading(true);
-
+    console.log(formData);
     try {
-      const res = await fetch("/api/questionnaire", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          habits: {
-            sleepSchedule: formData.sleepSchedule,
-            studyHours: formData.studyHours,
-            cleanliness: formData.cleanliness,
-            socialPreference: formData.socialPreference,
-            name: "Victor", // or get from user auth
-            gender: "male", // example
-          },
-          personality: {
-            personalityType: formData.personalityType,
-            noiseTolerance: formData.noiseTolerance,
-          },
-          routine: {
-            morningPerson: formData.morningPerson,
-            studyLocation: formData.studyLocation,
-            weekendActivity: formData.weekendActivity,
-          },
-          hobbies: {
-            hobbies: formData.hobbies,
-            musicPreference: formData.musicPreference,
-            sportsInterest: formData.sportsInterest,
-          },
-          academic: {
-            major: formData.major,
-            studyStyle: formData.studyStyle,
-            academicGoals: formData.academicGoals,
-            libraryFrequency: formData.libraryFrequency,
-            // level: formData.level || "300", // example
-          },
-        }),
-      });
+      // const res = await fetch("/api/questionnaire", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
 
-      const data = await res.json();
+      //   }),
+      // });
+
+      // const data = await res.json();
+      const data = await submitQuestionnaire({
+        habits: {
+          sleepSchedule: formData.sleepSchedule,
+          studyHours: formData.studyHours,
+          cleanliness: formData.cleanliness,
+          socialPreference: formData.socialPreference,
+        },
+        personality: {
+          personalityType: formData.personalityType,
+          noiseTolerance: formData.noiseTolerance,
+        },
+        routine: {
+          morningPerson: formData.morningPerson,
+          studyLocation: formData.studyLocation,
+          weekendActivity: formData.weekendActivity,
+        },
+        hobbies: {
+          hobbies: formData.hobbies,
+          musicPreference: formData.musicPreference,
+          sportsInterest: formData.sportsInterest,
+        },
+        academic: {
+          major: formData.major,
+          studyStyle: formData.studyStyle,
+          academicGoals: formData.academicGoals,
+          libraryFrequency: formData.libraryFrequency,
+          // level: formData.level || "300", // example
+        },
+      });
       if (data.success) {
         setSubmitted(true);
+        setLoading(false);
         alert("Questionnaire submitted successfully!");
       } else {
         alert("Failed to submit questionnaire.");
@@ -471,14 +463,7 @@ export default function HostelQuestionnaire() {
 
   return (
     <>
-      {/* Header */}
-      <header className="absolute top-0 left-0 w-full z-50 p-6 transition-all bg-transparent">
-        <div className="max-w-7xl mx-auto flex justify-end items-center">
-          <div className="text-[var(--color-primary-500)] font-medium">
-            <button onClick={() => logout()}>Logout</button>
-          </div>
-        </div>
-      </header>
+      <Logout />
       {/* Main Section */}
       <section
         className="min-h-screen flex items-center relative overflow-hidden pt-24"
