@@ -14,7 +14,9 @@ export default function SignInPage() {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
+    // stops form normal proceess for validation
     e.preventDefault();
+    // checks if the email exists and if it contains the @ symbol as it should
     if (!email || !email.includes("@")) {
       toast.error("Please enter a valid email address");
       return;
@@ -22,16 +24,18 @@ export default function SignInPage() {
 
     try {
       setLoading(true);
+      // submit the email to login the user
       const loginData = await loginStudent(email);
-
+      // if the email doesn't exists, throw the relivant error
       if (!loginData.success) {
         toast.error(loginData.error);
         setLoading(false);
         return;
       }
-
+      // if it does, set the cookie with the student uuid
       const cookieData = await setStudentCookie(loginData.studentUuid);
 
+      // if setting the cookies doesn't work, show the necessary error
       if (!cookieData.success) {
         toast.error(cookieData.error);
         setLoading(false);
@@ -49,18 +53,6 @@ export default function SignInPage() {
   return (
     <>
       <main className="relative min-h-screen overflow-hidden">
-        {/* Header */}
-        <header className="absolute top-0 left-0 w-full z-50">
-          <div className="max-w-6xl mx-auto px-6 py-6 flex justify-end items-center">
-            <Link
-              href="/"
-              className="ml-auto text-[var(--color-primary-500)] hover:text-[var(--color-primary-600)] transition-colors"
-            >
-              ← Back to Home
-            </Link>
-          </div>
-        </header>
-
         {/* Hero Section */}
         <section
           className="relative flex items-center min-h-screen"

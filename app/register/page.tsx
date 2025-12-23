@@ -30,7 +30,7 @@ export default function RegistrationPage() {
       name: "",
       gender: "male",
       level: "freshman",
-      matricNo: "U2021/339992",
+      matricNo: "",
       email: "",
     },
   });
@@ -76,7 +76,7 @@ export default function RegistrationPage() {
       router.push("/questionaire");
     } catch (err) {
       toast.error("Registration failed. Please try again.");
-      throw new Error(err);
+      console.log(err);
     } finally {
       setLoading(false);
     }
@@ -95,16 +95,6 @@ export default function RegistrationPage() {
 
   return (
     <>
-      <header className="absolute top-0 left-0 w-full z-50">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex justify-end items-center">
-          <Link
-            href="/login"
-            className="ml-auto text-[var(--color-primary-500)] hover:text-[var(--color-primary-600)] transition-colors"
-          >
-            ← Back to Login
-          </Link>
-        </div>
-      </header>
       {/* Main */}
       <section
         className="min-h-screen flex items-center relative overflow-hidden"
@@ -315,6 +305,15 @@ export default function RegistrationPage() {
               >
                 <Send size={18} /> Preview Registration
               </button>
+              <div className="text-center text-sm text-[var(--color-neutral-500)]">
+                <p className="mb-2">Already have an account?</p>
+                <Link
+                  href="/login"
+                  className="font-medium text-[var(--color-primary-500)] hover:text-[var(--color-primary-600)] transition-colors"
+                >
+                  ← Go back to signin
+                </Link>
+              </div>
             </form>
           </div>
         </div>

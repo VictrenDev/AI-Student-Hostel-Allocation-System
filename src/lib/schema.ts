@@ -28,16 +28,6 @@ export const students = sqliteTable("students", {
   createdAt: text("created_at").$type<string>().notNull(),
 });
 
-// export const questionnaireResponses = sqliteTable("questionnaire_responses", {
-//   studentId: integer("student_id")
-//     .notNull()
-//     .references(() => students.id),
-//   responses: text("responses", { mode: "json" })
-//     .$type<QuestionnaireResponse[]>()
-//     .notNull(), // FIXED
-//   submittedAt: text("submitted_at").$type<string>().notNull(),
-// });
-
 // src/lib/schema.ts
 export const questionnaireResponses = sqliteTable("questionnaire_responses", {
   studentId: integer("student_id")

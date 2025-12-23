@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   UserCheck,
   Lock,
@@ -21,15 +21,49 @@ import {
   Target,
   Users,
 } from "lucide-react";
-import Logout from "../_components/logout";
 import { submitQuestionnaire } from "@/src/actions/submt-questionaire";
+import { useRouter } from "next/navigation";
 
 export default function HostelQuestionnaire() {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const router = useRouter();
+  // const [blocked, setBlocked] = useState(false);
 
-  // Form state
+  useEffect(() => {
+    console.log("=== DEBUG COOKIE CHECK ===");
+    console.log("All cookies:", document.cookie);
+    console.log(
+      "Has questionnaire_submitted cookie:",
+      document.cookie.includes("questionnaire_submitted"),
+    );
+
+    // Check specific cookie
+    const cookieValue = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("questionnaire_submitted="))
+      ?.split("=")[1];
+
+    console.log("Cookie value:", cookieValue);
+
+    if (cookieValue === "true") {
+      console.log("✅ Cookie found! Redirecting...");
+      router.push("/status");
+    } else {
+      console.log("❌ Cookie not found or not 'true'");
+
+      // Check API as backup
+      fetch("/api/check-questionnaire", { credentials: "include" })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("API response:", data);
+          if (data.hasSubmitted) {
+            router.push("/status");
+          }
+        });
+    }
+  }, [router]);
   const [formData, setFormData] = useState({
     // Habits
     sleepSchedule: "",
@@ -343,6 +377,14 @@ export default function HostelQuestionnaire() {
           // level: formData.level || "300", // example
         },
       });
+      // if (data?.error === "NEXT_REDIRECT") {
+      //   // Server tried to redirect - do it manually
+      //   localStorage.setItem("questionnaire_submitted", "true");
+      //   localStorage.setItem("submitted_at", new Date().toISOString());
+      //   window.location.href = "/status";
+
+      //   return;
+      // }
       if (data.success) {
         setSubmitted(true);
         setLoading(false);
@@ -463,7 +505,6 @@ export default function HostelQuestionnaire() {
 
   return (
     <>
-      <Logout />
       {/* Main Section */}
       <section
         className="min-h-screen flex items-center relative overflow-hidden pt-24"
