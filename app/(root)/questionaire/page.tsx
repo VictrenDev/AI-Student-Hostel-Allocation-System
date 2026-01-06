@@ -21,7 +21,7 @@ import {
   Target,
   Users,
 } from "lucide-react";
-import { submitQuestionnaire } from "@/src/actions/submt-questionaire";
+import { submitQuestionnaire } from "@/src/actions/submit-questionaire";
 import { useRouter } from "next/navigation";
 
 export default function HostelQuestionnaire() {

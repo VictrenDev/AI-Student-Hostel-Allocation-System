@@ -1,21 +1,31 @@
 CREATE TABLE `ai_traits` (
 	`student_id` integer NOT NULL,
-	`chronotype` text NOT NULL,
-	`noise_sensitivity` text NOT NULL,
-	`sociability` text NOT NULL,
-	`study_focus` text NOT NULL,
+	`chronotype` integer NOT NULL,
+	`noise_sensitivity` integer NOT NULL,
+	`sociability` integer NOT NULL,
+	`study_focus` integer NOT NULL,
 	`generated_at` text NOT NULL,
 	FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `allocations` (
-	`room_id` integer NOT NULL,
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`student_id` integer NOT NULL,
-	`compatibility_score` integer NOT NULL,
+	`room_id` integer NOT NULL,
+	`compatibility_score` integer,
 	`explanation` text,
 	`allocated_at` text NOT NULL,
-	FOREIGN KEY (`room_id`) REFERENCES `rooms`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`room_id`) REFERENCES `rooms`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `hostels` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`name` text NOT NULL,
+	`location` text NOT NULL,
+	`wardern_name` text NOT NULL,
+	`gender` text NOT NULL,
+	`created_at` text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `questionnaire_responses` (
@@ -27,8 +37,11 @@ CREATE TABLE `questionnaire_responses` (
 --> statement-breakpoint
 CREATE TABLE `rooms` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`hostel_id` integer NOT NULL,
+	`room_number` text NOT NULL,
 	`capacity` integer NOT NULL,
-	`gender` text NOT NULL
+	`occupied` integer DEFAULT 0 NOT NULL,
+	FOREIGN KEY (`hostel_id`) REFERENCES `hostels`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `students` (

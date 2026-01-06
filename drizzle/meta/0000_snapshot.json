@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4a1bbe8e-eca1-4a15-b8f1-a997e480ebb5",
+  "id": "f1857b0e-820c-4ad5-bbbd-808cfdef0a4d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "ai_traits": {
@@ -16,28 +16,28 @@
         },
         "chronotype": {
           "name": "chronotype",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "noise_sensitivity": {
           "name": "noise_sensitivity",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "sociability": {
           "name": "sociability",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "study_focus": {
           "name": "study_focus",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -73,15 +73,22 @@
     "allocations": {
       "name": "allocations",
       "columns": {
-        "room_id": {
-          "name": "room_id",
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "student_id": {
+          "name": "student_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "student_id": {
-          "name": "student_id",
+        "room_id": {
+          "name": "room_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -91,7 +98,7 @@
           "name": "compatibility_score",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "explanation": {
@@ -111,19 +118,6 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "allocations_room_id_rooms_id_fk": {
-          "name": "allocations_room_id_rooms_id_fk",
-          "tableFrom": "allocations",
-          "tableTo": "rooms",
-          "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "allocations_student_id_students_id_fk": {
           "name": "allocations_student_id_students_id_fk",
           "tableFrom": "allocations",
@@ -136,8 +130,73 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "allocations_room_id_rooms_id_fk": {
+          "name": "allocations_room_id_rooms_id_fk",
+          "tableFrom": "allocations",
+          "tableTo": "rooms",
+          "columnsFrom": [
+            "room_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "hostels": {
+      "name": "hostels",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "wardern_name": {
+          "name": "wardern_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "gender": {
+          "name": "gender",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -197,6 +256,20 @@
           "notNull": true,
           "autoincrement": true
         },
+        "hostel_id": {
+          "name": "hostel_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "room_number": {
+          "name": "room_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "capacity": {
           "name": "capacity",
           "type": "integer",
@@ -204,16 +277,31 @@
           "notNull": true,
           "autoincrement": false
         },
-        "gender": {
-          "name": "gender",
-          "type": "text",
+        "occupied": {
+          "name": "occupied",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "rooms_hostel_id_hostels_id_fk": {
+          "name": "rooms_hostel_id_hostels_id_fk",
+          "tableFrom": "rooms",
+          "tableTo": "hostels",
+          "columnsFrom": [
+            "hostel_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
