@@ -1,54 +1,7 @@
-"use client";
-
-import { useState } from "react";
-import { Mail, ArrowRight, Shield, Brain, Clock } from "lucide-react";
+import { Shield, Brain, Clock, Mail } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
-import { loginStudent } from "@/src/actions/login-student";
-import { setStudentCookie } from "@/src/helpers/set-cookie";
-import { useRouter } from "next/navigation";
-
-export default function SignInPage() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    // stops form normal proceess for validation
-    e.preventDefault();
-    // checks if the email exists and if it contains the @ symbol as it should
-    if (!email || !email.includes("@")) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      // submit the email to login the user
-      const loginData = await loginStudent(email);
-      // if the email doesn't exists, throw the relivant error
-      if (!loginData.success) {
-        toast.error(loginData.error);
-        setLoading(false);
-        return;
-      }
-      // if it does, set the cookie with the student uuid
-      const cookieData = await setStudentCookie(loginData.studentUuid);
-
-      // if setting the cookies doesn't work, show the necessary error
-      if (!cookieData.success) {
-        toast.error(cookieData.error);
-        setLoading(false);
-        return;
-      }
-      setLoading(false);
-      toast.success("Logged in successfully");
-      router.push("/questionaire");
-    } catch (error) {
-      toast.error("An error occurred");
-      setLoading(false);
-    }
-  };
+import LoginFormComponent from "./form";
+export default function LoginInPage() {
 
   return (
     <>
@@ -61,7 +14,7 @@ export default function SignInPage() {
           <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-20 w-full">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Left Column - Hero Content */}
-              <div className="max-w-lg">
+              <div className="max-w-lg hidden lg:block">
                 <h1 className="text-4xl md:text-5xl font-bold leading-tight text-[var(--color-primary-700)]">
                   Welcome Back to{" "}
                   <span className="relative text-[var(--color-primary-500)]">
@@ -125,69 +78,22 @@ export default function SignInPage() {
                     Enter your student email to continue
                   </p>
                 </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block mb-2 font-semibold text-[var(--color-primary-700)]">
-                      Student Email Address
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--color-neutral-400)]" />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="your.email@university.edu"
-                        required
-                        className="w-full pl-12 pr-4 py-4 rounded-xl border-[2px] border-[var(--color-border)] bg-[var(--color-input-bg)] focus:border-[var(--color-primary-500)] focus:outline-none"
-                      />
-                    </div>
-                    <p className="text-sm text-[var(--color-neutral-400)] mt-2">
-                      Use your university-issued email address
-                    </p>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-4 rounded-full text-white font-semibold flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-70"
-                    style={{ background: "var(--gradient-primary)" }}
-                  >
-                    {loading ? (
-                      "Logging you in..."
-                    ) : (
-                      <>
-                        Login to your account <ArrowRight size={18} />
-                      </>
-                    )}
-                  </button>
-
-                  <div className="text-center text-sm text-[var(--color-neutral-500)]">
-                    <p className="mb-2">Don't have an account yet?</p>
-                    <Link
-                      href="/register"
-                      className="font-medium text-[var(--color-primary-500)] hover:text-[var(--color-primary-600)] transition-colors"
-                    >
-                      Complete your registration first →
-                    </Link>
-                  </div>
-                </form>
-
+                <LoginFormComponent />
                 {/* Security Note */}
                 {/*<div className="mt-8 pt-6 border-t border-[var(--color-border)]">
-                  <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-[var(--color-primary-500)] mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-[var(--color-primary-700)]">
-                        Secure Authentication
-                      </p>
-                      <p className="text-xs text-[var(--color-neutral-500)]">
-                        We use magic links for passwordless, secure sign-in. No
-                        passwords to remember.
-                      </p>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <Shield className="w-5 h-5 text-[var(--color-primary-500)] mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-[var(--color-primary-700)]">
+                      Secure Authentication
+                    </p>
+                    <p className="text-xs text-[var(--color-neutral-500)]">
+                      We use magic links for passwordless, secure sign-in. No
+                      passwords to remember.
+                    </p>
                   </div>
-                </div>*/}
+                </div>
+              </div>*/}
               </div>
             </div>
           </div>

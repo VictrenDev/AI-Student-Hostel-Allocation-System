@@ -56,19 +56,6 @@ export default function RegistrationPage() {
       }
 
       // Call API route to set cookie
-      const res = await fetch("/api/set-student-cookie", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentUuid: newStudentResponse.studentUuid }),
-      });
-
-      const cookieResult = await res.json();
-
-      if (!cookieResult.success) {
-        toast.error("Failed to set session cookie.");
-        return;
-      }
-
       toast.success(`Registration successful for ${data.name}!`);
       reset();
       setShowPreview(false);
@@ -198,11 +185,10 @@ export default function RegistrationPage() {
                             className="hidden"
                           />
                           <span
-                            className={`w-5 h-5 rounded-full border-2 border-[var(--color-border)] flex-shrink-0 relative ${
-                              field.value === g
-                                ? "border-[var(--color-primary-500)]"
-                                : ""
-                            }`}
+                            className={`w-5 h-5 rounded-full border-2 border-[var(--color-border)] flex-shrink-0 relative ${field.value === g
+                              ? "border-[var(--color-primary-500)]"
+                              : ""
+                              }`}
                           >
                             {field.value === g && (
                               <span className="w-2.5 h-2.5 bg-[var(--color-primary-500)] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />

@@ -97,6 +97,25 @@ export const roomsRelations = relations(rooms, ({ one }) => ({
     references: [hostels.id],
   }),
 }));
+
+// allocations relations
+export const allocationsRelations = relations(allocations, ({ one }) => ({
+  room: one(rooms, {
+    fields: [allocations.roomId],
+    references: [rooms.id],
+  }),
+  student: one(students, {
+    fields: [allocations.studentId],
+    references: [students.id],
+  }),
+}));
+
+export const studentsRelations = relations(students, ({ many }) => ({
+  allocations: many(allocations),
+  questionnaireResponses: many(questionnaireResponses),
+  aiTraits: many(aiTraits),
+}));
+
 /** ===== INFERRED TYPES ===== */
 export type Student = InferSelectModel<typeof students>;
 export type NewStudent = InferInsertModel<typeof students>;

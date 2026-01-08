@@ -1,3 +1,5 @@
+"use client"
+import { getAllocationStatus } from "@/src/actions/get-allocation-status";
 import {
   Brain,
   Clock,
@@ -9,18 +11,26 @@ import {
   Home,
   Calendar,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function StatusPage() {
   // Example status data - you can fetch this from your API
-  const allocationStatus = {
-    status: "pending", // "pending", "processing", "completed", "failed"
-    estimatedCompletion: "2024-03-15",
-    positionInQueue: 12,
-    totalStudents: 150,
-    allocatedRoom: null, // or "Room 301 - Block A"
-    roommate: null, // or "John Doe"
-    lastUpdated: "2024-03-10 14:30",
-  };
+  const [allocationStatus, setAllocationStatus] = useState<any>(null);
+  useEffect(() => {
+    getAllocationStatus().then(setAllocationStatus);
+  }, []);
+
+  if (!allocationStatus) return null;
+
+  // const allocationStatus = {
+  //   status: "pending", // "pending", "processing", "completed", "failed"
+  //   estimatedCompletion: "2024-03-15",
+  //   positionInQueue: 12,
+  //   totalStudents: 150,
+  //   allocatedRoom: null, // or "Room 301 - Block A"
+  //   roommate: null, // or "John Doe"
+  //   lastUpdated: "2024-03-10 14:30",
+  // };
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -108,15 +118,14 @@ export default function StatusPage() {
               </div>
               <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    allocationStatus.status === "completed"
-                      ? "bg-green-500"
-                      : allocationStatus.status === "processing"
-                        ? "bg-blue-500"
-                        : allocationStatus.status === "failed"
-                          ? "bg-yellow-500"
-                          : "bg-purple-500"
-                  }`}
+                  className={`h-full rounded-full transition-all duration-500 ${allocationStatus.status === "completed"
+                    ? "bg-green-500"
+                    : allocationStatus.status === "processing"
+                      ? "bg-blue-500"
+                      : allocationStatus.status === "failed"
+                        ? "bg-yellow-500"
+                        : "bg-purple-500"
+                    }`}
                   style={{
                     width:
                       allocationStatus.status === "completed"
