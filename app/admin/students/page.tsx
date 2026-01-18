@@ -160,7 +160,7 @@ export default function StudentsPage() {
             <div>
               <p className="text-gray-500 text-sm">Allocated</p>
               <p className="text-2xl font-bold text-purple-600">
-                {Math.floor(students.length * 0.65)}{" "}
+                {Math.floor(students.length * 1)}{" "}
                 {/* Replace with actual allocated count */}
               </p>
             </div>

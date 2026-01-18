@@ -9,7 +9,6 @@ import {
   Users,
   Search,
   Plus,
-  Edit,
   Trash2,
 } from "lucide-react";
 import { getAllHostelsWithRooms } from "@/src/actions/admin/get-hostels";
@@ -54,7 +53,9 @@ export default function HostelsPage() {
         console.error(res.error);
         return;
       }
-
+      if (!res.data) {
+        return
+      }
       const transformed: Hostel[] = res.data.map((hostel) => {
         const totalRooms = hostel.rooms.length;
         const occupiedRooms = hostel.rooms.filter(

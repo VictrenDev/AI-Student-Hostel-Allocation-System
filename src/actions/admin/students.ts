@@ -7,8 +7,9 @@ import {
   allocations,
   rooms,
   hostels,
+
 } from "@/src/lib/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export async function getAdminStudents() {
   try {
@@ -48,8 +49,11 @@ export async function getAdminStudents() {
       hostelName: row.hostelName ?? null,
       roomNumber: row.roomNumber ?? null,
     }));
+    const allocationsResult = await db.select({ totalAllocations: sql<number>`count(*)` }).from(allocations)
+    const totalAllocations = allocationsResult[0].totalAllocations
+    console.log(allocationsResult)
 
-    return { success: true, students: formatted };
+    return { success: true, students: formatted, totalAllocations };
   } catch (error) {
     console.error("getAdminStudents error:", error);
     return { success: false, students: [] };

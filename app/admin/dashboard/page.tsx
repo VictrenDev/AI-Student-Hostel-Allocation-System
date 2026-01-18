@@ -20,6 +20,9 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { allocateStudentsAction } from "@/src/actions/admin/allocation";
+import { generateAITraitsForAllUsers } from "@/src/lib/ai/generate-ai-traits";
+import { getAdminStudents } from "@/src/actions/admin/students";
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
@@ -37,6 +40,7 @@ export default function AdminDashboard() {
     lastRun: "2024-03-10T14:30:00Z",
     estimatedTime: "15-20 minutes",
     matchesGenerated: 0,
+    totalAllocationsValue: 0
   });
 
   const [compatibilityData] = useState([
@@ -54,21 +58,31 @@ export default function AdminDashboard() {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      // In reality, fetch from your API
-      setTimeout(() => {
-        setStats({
-          totalStudents: 215,
-          withQuestionnaire: 198,
-          allocated: 156,
-          pendingAllocation: 42,
-          averageCompatibility: 84,
-          aiAccuracy: 92,
-        });
-        setLoading(false);
-      }, 1000);
+      const { students, totalAllocations } = await getAdminStudents()
+
+      setAllocationStatus({
+        ...allocationStatus,
+        totalAllocationsValue: totalAllocations || 0,
+
+      })
+      if (!totalAllocations) {
+        return
+      }
+      setStats({
+        totalStudents: students.length,
+        withQuestionnaire: students.filter((s) => s.hasQuestionnaire).length,
+        allocated: 156,
+        pendingAllocation: students.length - totalAllocations,
+        averageCompatibility: 84,
+        aiAccuracy: 92,
+      });
+      console.log(allocationStatus.totalAllocationsValue,)
+
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
-      setLoading(false);
+
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -77,14 +91,17 @@ export default function AdminDashboard() {
       ...allocationStatus,
       status: "running",
     });
-
+    const aiTraitsResults = await generateAITraitsForAllUsers()
+    const allocationResults = await allocateStudentsAction()
     // Simulate API call
     setTimeout(() => {
       setAllocationStatus({
+        ...allocationStatus,
         status: "completed",
         lastRun: new Date().toISOString(),
         estimatedTime: "18 minutes",
-        matchesGenerated: 42,
+        matchesGenerated: aiTraitsResults.processed,
+
       });
       // Refresh stats
       fetchDashboardData();
@@ -96,8 +113,8 @@ export default function AdminDashboard() {
       case "running":
         return {
           icon: <RefreshCw className="w-5 h-5 animate-spin" />,
-          title: "AI Allocation in Progress",
-          description: "Our AI is currently matching students with rooms.",
+          title: "Allocation in Progress",
+          description: "Our AI is currently creating Compatibility scores",
           color: "text-blue-600",
           bgColor: "bg-blue-50",
           borderColor: "border-blue-200",
@@ -195,11 +212,10 @@ export default function AdminDashboard() {
           <button
             onClick={runAllocation}
             disabled={allocationStatus.status === "running"}
-            className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all ${
-              allocationStatus.status === "running"
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-blue-500 to-indigo-500 hover:opacity-90"
-            } text-white`}
+            className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all ${allocationStatus.status === "running"
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-gradient-to-r from-blue-500 to-indigo-500 hover:opacity-90"
+              } text-white`}
           >
             {allocationStatus.status === "running" ? (
               <>
@@ -237,7 +253,7 @@ export default function AdminDashboard() {
         <StatCard
           icon={<Home className="w-8 h-8" />}
           title="Allocated"
-          value={stats.allocated}
+          value={allocationStatus.totalAllocationsValue}
           change={`${stats.pendingAllocation} pending`}
           color="purple"
           loading={loading}

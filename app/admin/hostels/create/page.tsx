@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building, Save, ArrowLeft } from "lucide-react";
 import { createHostelWithRooms } from "@/src/actions/admin/create-hostel-with-rooms";
+import { toast } from "sonner";
 type HostelGender = "male" | "female" | "mixed";
 
 export default function CreateHostelPage() {
@@ -48,9 +49,10 @@ export default function CreateHostelPage() {
         return;
       }
       console.log("Hostel has been created successfully", res.hostelId);
+      toast.success("Hostel created successfully");
     } catch (error) {
       console.error(error);
-      alert("Failed to create hostel");
+      toast.error("Failed to create hostel");
     } finally {
       setLoading(false);
     }
