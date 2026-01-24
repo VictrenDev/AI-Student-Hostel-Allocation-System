@@ -1,94 +1,71 @@
-// "use server";
-
-// import OpenAI from "openai";
-// import { db } from "@/src/lib/database";
-// import { questionnaireResponses, aiTraits } from "@/src/lib/schema";
-// import { eq } from "drizzle-orm";
-// import { buildPrompt } from "./build-prompt";
-// import { validateTraits } from "./validate-traits";
-
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY,
-// });
-
-// export async function generateAITraitsForAllUsers() {
-//   const responses = await db.select().from(questionnaireResponses);
-
-//   let processed = 0;
-//   let skipped = 0;
-
-//   for (const entry of responses) {
-//     const studentId = entry.studentId;
-
-//     // Skip if traits already exist
-//     const existing = await db
-//       .select()
-//       .from(aiTraits)
-//       .where(eq(aiTraits.studentId, studentId))
-//       .limit(1);
-
-//     if (existing.length > 0) {
-//       skipped++;
-//       continue;
-//     }
-
-//     try {
-//       const prompt = buildPrompt(entry.responses);
-
-//       const completion = await openai.chat.completions.create({
-//         model: "gpt-4o-mini",
-//         temperature: 0.3,
-//         messages: [
-//           { role: "system", content: "Output only valid JSON." },
-//           { role: "user", content: prompt },
-//         ],
-//       });
-
-//       const content = completion.choices[0].message.content;
-//       if (!content) throw new Error("Empty AI response");
-
-//       const traits = JSON.parse(content);
-//       validateTraits(traits);
-
-//       await db.insert(aiTraits).values({
-//         studentId,
-//         chronotype: traits.chronotype,
-//         noiseSensitivity: traits.noiseSensitivity,
-//         sociability: traits.sociability,
-//         studyFocus: traits.studyFocus,
-//         generatedAt: new Date().toISOString(),
-//       });
-
-//       processed++;
-//     } catch (err) {
-//       console.error(`AI failed for student ${studentId}`, err);
-//       continue;
-//     }
-//   }
-
-//   return {
-//     success: true,
-//     processed,
-//     skipped,
-//   };
-// }
-
 "use server";
 
+import OpenAI from "openai";
 import { db } from "@/src/lib/database";
 import { questionnaireResponses, aiTraits } from "@/src/lib/schema";
 import { eq } from "drizzle-orm";
+
+/* ----------------------------- OpenAI Client ----------------------------- */
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+/* ----------------------------- Prompt Builder ----------------------------- */
+
+function buildPrompt(responses: any[]) {
+  return `
+If information is unclear, use the neutral value 4.
+
+Questionnaire data:
+${JSON.stringify(responses)}
+`;
+}
+
+/* ----------------------------- Validation -------------------------------- */
+
+function validateTraits(traits: any) {
+  const requiredKeys = [
+    "chronotype",
+    "noiseSensitivity",
+    "sociability",
+    "studyFocus",
+  ];
+
+  for (const key of requiredKeys) {
+    const value = traits[key];
+
+    if (!Number.isInteger(value)) {
+      throw new Error(`Trait ${key} is not an integer: ${value}`);
+    }
+
+    if (value < 1 || value > 7) {
+      throw new Error(`Trait ${key} out of range (1–7): ${value}`);
+    }
+  }
+
+  const extraKeys = Object.keys(traits).filter(
+    (k) => !requiredKeys.includes(k),
+  );
+
+  if (extraKeys.length > 0) {
+    throw new Error(`Unexpected keys returned: ${extraKeys.join(", ")}`);
+  }
+}
+
+/* ----------------------------- Main Action -------------------------------- */
 
 export async function generateAITraitsForAllUsers() {
   const responses = await db.select().from(questionnaireResponses);
 
   let processed = 0;
   let skipped = 0;
+  let failed = 0;
 
   for (const entry of responses) {
     const studentId = entry.studentId;
 
-    // Skip if traits already exist
+    /* ---------- Skip Existing ---------- */
     const existing = await db
       .select()
       .from(aiTraits)
@@ -100,78 +77,78 @@ export async function generateAITraitsForAllUsers() {
       continue;
     }
 
-    // ---------- RULE ENGINE ----------
-    const get = (key: string) =>
-      entry.responses.find((r: any) => r.questionId.includes(key))?.answer;
+    /* ---------- AI Generation ---------- */
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-5-nano",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a scoring engine. Output ONLY valid JSON. " +
+              "Schema: { chronotype: int(1-7), noiseSensitivity: int(1-7), sociability: int(1-7), studyFocus: int(1-7) }. " +
+              "No explanations. No extra keys.",
+          },
+          {
+            role: "user",
+            content: buildPrompt(entry.responses),
+          },
+        ],
+      });
 
-    const sleep = get("sleepSchedule");
-    const noise = get("noiseTolerance");
-    const social = get("socialPreference");
-    const study = get("studyHours");
+      const raw = completion.choices[0]?.message?.content;
 
-    const traits = {
-      chronotype:
-        sleep === "night"
-          ? 7
-          : sleep === "average"
-            ? 4
-            : sleep === "early"
-              ? 1
-              : 4,
-
-      noiseSensitivity:
-        noise === "quiet"
-          ? 1
-          : noise === "low"
-            ? 3
-            : noise === "moderate"
-              ? 5
-              : noise === "high"
-                ? 7
-                : 4,
-
-      sociability:
-        social === "very"
-          ? 7
-          : social === "moderate"
-            ? 5
-            : social === "quiet"
-              ? 2
-              : 4,
-
-      studyFocus:
-        study === "7+"
-          ? 7
-          : study === "5-6"
-            ? 6
-            : study === "3-4"
-              ? 4
-              : study === "1-2"
-                ? 2
-                : 4,
-    };
-
-    // ---------- VALIDATION ----------
-    for (const [key, value] of Object.entries(traits)) {
-      if (typeof value !== "number" || value < 1 || value > 7) {
-        throw new Error(`Invalid ${key}: ${value}`);
+      if (!raw) {
+        throw new Error("Empty response from OpenAI");
       }
+
+      let traits;
+      try {
+        traits = JSON.parse(raw);
+      } catch {
+        throw new Error(`Invalid JSON returned: ${raw}`);
+      }
+      console.log(traits)
+
+      validateTraits(traits);
+
+      await db.insert(aiTraits).values({
+        studentId,
+        chronotype: traits.chronotype,
+        noiseSensitivity: traits.noiseSensitivity,
+        sociability: traits.sociability,
+        studyFocus: traits.studyFocus,
+        generatedAt: new Date().toISOString(),
+      });
+
+      processed++;
+      console.info("AI traits saved", {
+        studentId,
+        traits,
+      });
+
+      /* Optional rate-limit safety */
+      await new Promise((r) => setTimeout(r, 150));
+    } catch (err: any) {
+      failed++;
+
+      console.error("AI TRAIT GENERATION FAILED", {
+        studentId,
+        errorMessage: err?.message,
+        errorStack: err?.stack,
+        responses: entry.responses,
+      });
+
+      continue;
     }
-
-    // ---------- SAVE ----------
-    await db.insert(aiTraits).values({
-      studentId,
-      ...traits,
-      generatedAt: new Date().toISOString(),
-    });
-
-    processed++;
   }
 
   return {
     success: true,
     processed,
     skipped,
-    mode: "rule-based",
+    failed,
+    mode: "ai",
+    model: "gpt-5-nano",
   };
 }

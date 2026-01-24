@@ -36,6 +36,7 @@ export default function StudentsPage() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10); // You can make this configurable
+  const [totalALlocation, setTotalALlocations] = useState<number | undefined>(0)
 
   useEffect(() => {
     fetchStudents();
@@ -48,6 +49,10 @@ export default function StudentsPage() {
       if (res.success) {
         setStudents(res.students);
       }
+      if (!res.totalAllocations) {
+        setTotalALlocations(0)
+      }
+      setTotalALlocations(res.totalAllocations)
     } catch (err) {
       console.error(err);
     } finally {
@@ -160,7 +165,7 @@ export default function StudentsPage() {
             <div>
               <p className="text-gray-500 text-sm">Allocated</p>
               <p className="text-2xl font-bold text-purple-600">
-                {Math.floor(students.length * 1)}{" "}
+                {Math.floor(totalALlocation || 0)}
                 {/* Replace with actual allocated count */}
               </p>
             </div>
@@ -268,12 +273,7 @@ export default function StudentsPage() {
                             View Details
                           </Link>
 
-                          {/* Quick Action Buttons */}
-                          {student.hasQuestionnaire && (
-                            <button className="px-3 py-1 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 text-sm">
-                              Allocate
-                            </button>
-                          )}
+
                         </div>
                       </td>
                     </tr>

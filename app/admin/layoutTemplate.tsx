@@ -16,21 +16,23 @@ export default function AdminLayout({
 
   const navItems = [
     {
-      name: "All Students",
-      path: "/admin/students",
-      icon: <Users size={20} />,
+      name: "Dashboard",
+      path: "/admin/dashboard",
+      icon: <Home size={20} />,
     },
-    { name: "Hostels", path: "/admin/hostels", icon: <Building size={20} /> },
     {
       name: "Create Hostel",
       path: "/admin/hostels/create",
       icon: <Home size={20} />,
     },
     {
-      name: "Dashboard",
-      path: "/admin/dashboard",
-      icon: <Home size={20} />,
+      name: "All Students",
+      path: "/admin/students",
+      icon: <Users size={20} />,
     },
+    { name: "Hostels", path: "/admin/hostels", icon: <Building size={20} /> },
+
+
   ];
 
   return (
@@ -81,10 +83,9 @@ export default function AdminLayout({
                   onClick={() => setSidebarOpen(false)}
                   className={`
                     flex items-center gap-3 p-3 rounded-xl transition-all
-                    ${
-                      isActive
-                        ? "bg-blue-500 text-white"
-                        : "text-gray-700 hover:bg-gray-100"
+                    ${isActive
+                      ? "bg-blue-500 text-white"
+                      : "text-gray-700 hover:bg-gray-100"
                     }
                   `}
                 >

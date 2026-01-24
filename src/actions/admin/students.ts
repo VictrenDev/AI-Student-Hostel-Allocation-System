@@ -7,7 +7,6 @@ import {
   allocations,
   rooms,
   hostels,
-
 } from "@/src/lib/schema";
 import { eq, sql } from "drizzle-orm";
 
@@ -22,9 +21,7 @@ export async function getAdminStudents() {
         level: students.level,
         matricNo: students.matricNo,
         createdAt: students.createdAt,
-
         questionnaireId: questionnaireResponses.studentId,
-
         hostelName: hostels.name,
         roomNumber: rooms.roomNumber,
       })
@@ -51,6 +48,7 @@ export async function getAdminStudents() {
     }));
     const allocationsResult = await db.select({ totalAllocations: sql<number>`count(*)` }).from(allocations)
     const totalAllocations = allocationsResult[0].totalAllocations
+    // if (!totalAllocations) return 0
     console.log(allocationsResult)
 
     return { success: true, students: formatted, totalAllocations };

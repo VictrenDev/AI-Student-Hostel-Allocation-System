@@ -116,12 +116,7 @@ export default function HostelsPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Hostels</h1>
           <p className="text-gray-600">Manage hostel buildings and rooms</p>
         </div>
-        <GenerateAITraitsButton />
-        <form action={allocateStudentsAction}>
-          <button type="submit" className="p-2 bg-blue-500 text-white">
-            Run Allocation
-          </button>
-        </form>
+
         <Link
           href="/admin/hostels/create"
           className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"

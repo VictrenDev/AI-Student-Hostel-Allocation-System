@@ -30,9 +30,9 @@ export async function seedStudentsAction() {
     console.log(
       "🧹 Clearing existing students, questionnaires, and AI traits...",
     );
-    await db.delete(questionnaireResponses).execute();
-    await db.delete(aiTraits).execute();
-    await db.delete(students).execute();
+    // await db.delete(questionnaireResponses).execute();
+    // await db.delete(aiTraits).execute();
+    // await db.delete(students).execute();
     // await db.delete(hostels).execute();
     // await db.delete(rooms).execute();
     // await db.delete(allocations).execute();
@@ -93,16 +93,16 @@ export async function seedStudentsAction() {
       console.log(`Questionnaire for student ${i} inserted.`);
 
       // Insert AI traits
-      const base = Math.floor(Math.random() * 3) + 3;
-      await db.insert(aiTraits).values({
-        studentId,
-        chronotype: trait(base),
-        noiseSensitivity: trait(base),
-        sociability: trait(base),
-        studyFocus: trait(base),
-        generatedAt: new Date().toISOString(),
-      });
-      console.log(`AI traits for student ${i} inserted.`);
+      // const base = Math.floor(Math.random() * 3) + 3;
+      // await db.insert(aiTraits).values({
+      //   studentId,
+      //   chronotype: trait(base),
+      //   noiseSensitivity: trait(base),
+      //   sociability: trait(base),
+      //   studyFocus: trait(base),
+      //   generatedAt: new Date().toISOString(),
+      // });
+      // console.log(`AI traits for student ${i} inserted.`);
     }
 
     console.log("✅ Database seeding completed successfully!");

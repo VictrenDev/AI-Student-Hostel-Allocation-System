@@ -92,20 +92,19 @@ export default function AdminDashboard() {
       status: "running",
     });
     const aiTraitsResults = await generateAITraitsForAllUsers()
-    const allocationResults = await allocateStudentsAction()
-    // Simulate API call
-    setTimeout(() => {
-      setAllocationStatus({
-        ...allocationStatus,
-        status: "completed",
-        lastRun: new Date().toISOString(),
-        estimatedTime: "18 minutes",
-        matchesGenerated: aiTraitsResults.processed,
+    await allocateStudentsAction()
 
-      });
-      // Refresh stats
-      fetchDashboardData();
-    }, 3000);
+    setAllocationStatus({
+      ...allocationStatus,
+      status: "completed",
+      lastRun: new Date().toISOString(),
+      estimatedTime: "1 minute",
+      matchesGenerated: aiTraitsResults.processed,
+
+    })
+    setTimeout(() => { }, 1000)
+    console.log(aiTraitsResults)
+    fetchDashboardData();
   };
 
   const getStatusConfig = () => {
@@ -165,7 +164,7 @@ export default function AdminDashboard() {
               Monitor and control the AI-powered hostel allocation system
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          {/*<div className="flex items-center gap-3">
             <button
               onClick={fetchDashboardData}
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -177,7 +176,7 @@ export default function AdminDashboard() {
               <Download className="w-4 h-4" />
               Export Report
             </button>
-          </div>
+          </div>*/}
         </div>
       </div>
 
@@ -246,7 +245,7 @@ export default function AdminDashboard() {
           icon={<Brain className="w-8 h-8" />}
           title="Questionnaires"
           value={stats.withQuestionnaire}
-          percentage={`${Math.round((stats.withQuestionnaire / stats.totalStudents) * 100)}%`}
+          percentage={`${Math.round((stats.withQuestionnaire / stats.totalStudents) * 100) || 0}%`}
           color="green"
           loading={loading}
         />
