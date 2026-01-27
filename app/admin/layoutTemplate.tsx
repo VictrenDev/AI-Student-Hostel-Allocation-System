@@ -20,17 +20,18 @@ export default function AdminLayout({
       path: "/admin/dashboard",
       icon: <Home size={20} />,
     },
-    {
-      name: "Create Hostel",
-      path: "/admin/hostels/create",
-      icon: <Home size={20} />,
-    },
+    { name: "Hostels", path: "/admin/hostels", icon: <Building size={20} /> },
+
+    // {
+    //   name: "Create Hostel",
+    //   path: "/admin/hostels/create",
+    //   icon: <Home size={20} />,
+    // },
     {
       name: "All Students",
       path: "/admin/students",
       icon: <Users size={20} />,
     },
-    { name: "Hostels", path: "/admin/hostels", icon: <Building size={20} /> },
 
 
   ];

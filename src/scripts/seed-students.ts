@@ -22,25 +22,25 @@ function trait(base: number) {
   return Math.min(7, Math.max(1, base + Math.floor(Math.random() * 3 - 1)));
 }
 
-export async function seedStudentsAction() {
+export async function seedStudentsAction(totalNumberOfSeededStudents: number) {
   console.log("🌱 Starting database seeding...");
 
   try {
     // --- CLEAR DATABASE ---
-    console.log(
-      "🧹 Clearing existing students, questionnaires, and AI traits...",
-    );
+    // console.log(
+    //   "🧹 Clearing existing students, questionnaires, and AI traits...",
+    // );
     // await db.delete(questionnaireResponses).execute();
     // await db.delete(aiTraits).execute();
     // await db.delete(students).execute();
     // await db.delete(hostels).execute();
     // await db.delete(rooms).execute();
     // await db.delete(allocations).execute();
-    console.log("✅ Database cleared.");
+    // console.log("✅ Database cleared.");
 
     // --- INSERT STUDENTS ---
-    for (let i = 1; i <= 100; i++) {
-      const gender = i <= 50 ? "male" : "female";
+    for (let i = 1; i <= totalNumberOfSeededStudents; i++) {
+      const gender = i <= Math.round(totalNumberOfSeededStudents / 2) ? "male" : "female";
       const studentUUID = randomUUID();
 
       console.log(

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Building, Save, ArrowLeft } from "lucide-react";
 import { createHostelWithRooms } from "@/src/actions/admin/create-hostel-with-rooms";
 import { toast } from "sonner";
-type HostelGender = "male" | "female" | "mixed";
+type HostelGender = "male" | "female";
 
 export default function CreateHostelPage() {
   const router = useRouter();
@@ -185,7 +185,7 @@ export default function CreateHostelPage() {
               >
                 <option value={"male"}>Male</option>
                 <option value={"female"}>Female</option>
-                <option value={"mixed"}>Mixedoption</option>
+
               </select>
             </div>
           </div>

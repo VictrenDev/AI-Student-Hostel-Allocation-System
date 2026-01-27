@@ -5,8 +5,7 @@ import type { NextRequest } from "next/server";
 export function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
   const studentUuid = req.cookies.get("student_uuid")?.value;
-  const hasSubmitted =
-    req.cookies.get("questionnaire_submitted")?.value === "true";
+  const hasSubmitted = req.cookies.get("questionnaire_submitted")?.value === "true";
 
   console.log("Middleware check:", {
     path: url.pathname,

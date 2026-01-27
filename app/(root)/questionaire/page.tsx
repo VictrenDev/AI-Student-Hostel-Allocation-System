@@ -12,7 +12,7 @@ export default function HostelQuestionnaire() {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const router = useRouter();
+  // const router = useRouter();
   // const [blocked, setBlocked] = useState(false);
 
   // useEffect(() => {

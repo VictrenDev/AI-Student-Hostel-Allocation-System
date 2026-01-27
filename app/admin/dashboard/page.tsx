@@ -268,7 +268,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
         {/* Left Column: AI Analysis */}
         <div className="lg:col-span-2 space-y-8">
           {/* Compatibility Distribution */}
@@ -313,7 +313,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* AI Performance Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/*<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <MetricCard
               icon={<Target className="w-6 h-6" />}
               title="AI Matching Accuracy"
@@ -346,13 +346,13 @@ export default function AdminDashboard() {
               trend=""
               color="orange"
             />
-          </div>
+          </div>*/}
         </div>
 
         {/* Right Column: Quick Actions & Insights */}
         <div className="space-y-8">
           {/* Quick Actions */}
-          <div className="bg-white rounded-2xl shadow p-6">
+          {/*<div className="bg-white rounded-2xl shadow p-6">
             <h3 className="text-xl font-semibold text-gray-800 mb-6">
               Quick Actions
             </h3>
@@ -402,10 +402,10 @@ export default function AdminDashboard() {
                 </div>
               </button>
             </div>
-          </div>
+          </div>*/}
 
           {/* System Status */}
-          <div className="bg-white rounded-2xl shadow p-6">
+          {/*<div className="bg-white rounded-2xl shadow p-6">
             <h3 className="text-xl font-semibold text-gray-800 mb-6">
               System Status
             </h3>
@@ -431,7 +431,7 @@ export default function AdminDashboard() {
                 description="Last backup: 2 days ago"
               />
             </div>
-          </div>
+          </div>*/}
         </div>
       </div>
     </div>
