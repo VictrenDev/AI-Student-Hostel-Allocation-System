@@ -1,4 +1,4 @@
-// app/admin/page.tsx
+// app/admin/page.tsx - Updated version
 "use client";
 
 import { useState, useEffect } from "react";
@@ -23,6 +23,8 @@ import Link from "next/link";
 import { allocateStudentsAction } from "@/src/actions/admin/allocation";
 import { generateAITraitsForAllUsers } from "@/src/lib/ai/generate-ai-traits";
 import { getAdminStudents } from "@/src/actions/admin/students";
+import { getCompatibilityStats } from "@/src/actions/admin/compatibility";
+import { seedStudentsAction } from "@/src/scripts/seed-students";
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
@@ -32,23 +34,23 @@ export default function AdminDashboard() {
     allocated: 0,
     pendingAllocation: 0,
     averageCompatibility: 0,
-    aiAccuracy: 0,
+    aiAccuracy: 92,
   });
 
   const [allocationStatus, setAllocationStatus] = useState({
-    status: "ready", // "ready", "running", "completed", "error"
-    lastRun: "2024-03-10T14:30:00Z",
+    status: "ready",
+    lastRun: new Date().toISOString(),
     estimatedTime: "15-20 minutes",
     matchesGenerated: 0,
     totalAllocationsValue: 0
   });
 
-  const [compatibilityData] = useState([
-    { score: "90-100%", count: 45, color: "bg-green-500" },
-    { score: "80-89%", count: 62, color: "bg-blue-500" },
-    { score: "70-79%", count: 58, color: "bg-yellow-500" },
-    { score: "60-69%", count: 32, color: "bg-orange-500" },
-    { score: "Below 60%", count: 18, color: "bg-red-500" },
+  const [compatibilityData, setCompatibilityData] = useState([
+    { score: "90-100%", count: 0, color: "bg-green-500" },
+    { score: "80-89%", count: 0, color: "bg-blue-500" },
+    { score: "70-79%", count: 0, color: "bg-yellow-500" },
+    { score: "60-69%", count: 0, color: "bg-orange-500" },
+    { score: "Below 60%", count: 0, color: "bg-red-500" },
   ]);
 
   useEffect(() => {
@@ -58,31 +60,72 @@ export default function AdminDashboard() {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const { students, totalAllocations } = await getAdminStudents()
+      // Fetch students and allocations count
+      const studentsResult = await getAdminStudents();
 
-      setAllocationStatus({
-        ...allocationStatus,
-        totalAllocationsValue: totalAllocations || 0,
-
-      })
-      if (!totalAllocations) {
-        return
+      if (!studentsResult.success || !studentsResult.students) {
+        throw new Error("Failed to fetch students");
       }
+
+      const { students, totalAllocations } = studentsResult;
+
+      // Fetch compatibility statistics
+      const compatibilityStats = (await getCompatibilityStats()) ?? {
+        averageCompatibility: 0,
+        totalAllocations: 0,
+        distribution: {
+          "90-100%": 0,
+          "80-89%": 0,
+          "70-79%": 0,
+          "60-69%": 0,
+          "Below 60%": 0,
+        },
+      };
+      const safeDistribution = compatibilityStats.distribution ?? {
+        "90-100%": 0,
+        "80-89%": 0,
+        "70-79%": 0,
+        "60-69%": 0,
+        "Below 60%": 0,
+      };
+
+      const distributionData = [
+        { score: "90-100%", count: safeDistribution["90-100%"], color: "bg-green-500" },
+        { score: "80-89%", count: safeDistribution["80-89%"], color: "bg-blue-500" },
+        { score: "70-79%", count: safeDistribution["70-79%"], color: "bg-yellow-500" },
+        { score: "60-69%", count: safeDistribution["60-69%"], color: "bg-orange-500" },
+        { score: "Below 60%", count: safeDistribution["Below 60%"], color: "bg-red-500" },
+      ];
+      console.log("compatibilityStats:", compatibilityStats);
+
+      // Calculate students with questionnaire
+      const withQuestionnaire = students.filter(s => s.hasQuestionnaire).length;
+
+
+
+      setCompatibilityData(distributionData);
+
+      // Update stats
       setStats({
         totalStudents: students.length,
-        withQuestionnaire: students.filter((s) => s.hasQuestionnaire).length,
-        allocated: 156,
-        pendingAllocation: students.length - totalAllocations,
-        averageCompatibility: 84,
+        withQuestionnaire,
+        allocated: totalAllocations || 0,
+        pendingAllocation: Math.max(0, students.length - (totalAllocations || 0)),
+        averageCompatibility: compatibilityStats.averageCompatibility,
         aiAccuracy: 92,
       });
-      console.log(allocationStatus.totalAllocationsValue,)
+
+      // Update allocation status
+      setAllocationStatus(prev => ({
+        ...prev,
+        totalAllocationsValue: totalAllocations || 0,
+        matchesGenerated: compatibilityStats.totalAllocations,
+      }));
 
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
-
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -91,20 +134,32 @@ export default function AdminDashboard() {
       ...allocationStatus,
       status: "running",
     });
-    const aiTraitsResults = await generateAITraitsForAllUsers()
-    await allocateStudentsAction()
 
-    setAllocationStatus({
-      ...allocationStatus,
-      status: "completed",
-      lastRun: new Date().toISOString(),
-      estimatedTime: "1 minute",
-      matchesGenerated: aiTraitsResults.processed,
+    try {
+      // Run AI traits generation and allocation
+      const aiTraitsResults = await generateAITraitsForAllUsers();
+      const allocationResult = await allocateStudentsAction();
 
-    })
-    setTimeout(() => { }, 1000)
-    console.log(aiTraitsResults)
-    fetchDashboardData();
+      setAllocationStatus(prev => ({
+        ...prev,
+        status: "completed",
+        lastRun: new Date().toISOString(),
+        estimatedTime: "1 minute",
+        matchesGenerated: aiTraitsResults?.processed || 0,
+      }));
+
+      // Refresh dashboard data after allocation
+      setTimeout(() => {
+        fetchDashboardData();
+      }, 1000);
+
+    } catch (error) {
+      console.error("Allocation failed:", error);
+      setAllocationStatus(prev => ({
+        ...prev,
+        status: "error",
+      }));
+    }
   };
 
   const getStatusConfig = () => {
@@ -151,6 +206,9 @@ export default function AdminDashboard() {
 
   const statusConfig = getStatusConfig();
 
+  // Calculate total count for percentage calculation
+  const totalCompatibilityCount = compatibilityData.reduce((sum, item) => sum + item.count, 0);
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       {/* Header */}
@@ -164,7 +222,7 @@ export default function AdminDashboard() {
               Monitor and control the AI-powered hostel allocation system
             </p>
           </div>
-          {/*<div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <button
               onClick={fetchDashboardData}
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -172,11 +230,7 @@ export default function AdminDashboard() {
               <RefreshCw className="w-4 h-4" />
               Refresh
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-              <Download className="w-4 h-4" />
-              Export Report
-            </button>
-          </div>*/}
+          </div>
         </div>
       </div>
 
@@ -237,7 +291,7 @@ export default function AdminDashboard() {
           icon={<Users className="w-8 h-8" />}
           title="Total Students"
           value={stats.totalStudents}
-          change="+12 this week"
+          change="Based on registered users"
           color="blue"
           loading={loading}
         />
@@ -245,7 +299,7 @@ export default function AdminDashboard() {
           icon={<Brain className="w-8 h-8" />}
           title="Questionnaires"
           value={stats.withQuestionnaire}
-          percentage={`${Math.round((stats.withQuestionnaire / stats.totalStudents) * 100) || 0}%`}
+          percentage={`${stats.totalStudents > 0 ? Math.round((stats.withQuestionnaire / stats.totalStudents) * 100) : 0}%`}
           color="green"
           loading={loading}
         />
@@ -261,7 +315,7 @@ export default function AdminDashboard() {
           icon={<TrendingUp className="w-8 h-8" />}
           title="Avg Compatibility"
           value={`${stats.averageCompatibility}%`}
-          change="+5% from last batch"
+          change={stats.allocated > 0 ? `${stats.allocated} allocations` : "No allocations yet"}
           color="orange"
           loading={loading}
         />
@@ -269,21 +323,24 @@ export default function AdminDashboard() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
-        {/* Left Column: AI Analysis */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Compatibility Distribution */}
-          <div className="bg-white rounded-2xl shadow p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-1">
-                  Compatibility Score Distribution
-                </h3>
-                <p className="text-gray-500">How well students are matched</p>
-              </div>
-              <BarChart3 className="w-6 h-6 text-blue-500" />
+        {/* Compatibility Distribution */}
+        <div className="bg-white rounded-2xl shadow p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-1">
+                Compatibility Score Distribution
+              </h3>
+              <p className="text-gray-500">How well students are matched</p>
             </div>
-            <div className="space-y-4">
-              {compatibilityData.map((item) => (
+            <BarChart3 className="w-6 h-6 text-blue-500" />
+          </div>
+          <div className="space-y-4">
+            {compatibilityData.map((item) => {
+              const percentage = totalCompatibilityCount > 0
+                ? (item.count / totalCompatibilityCount) * 100
+                : 0;
+
+              return (
                 <div
                   key={item.score}
                   className="flex items-center justify-between"
@@ -299,7 +356,7 @@ export default function AdminDashboard() {
                       <div
                         className={`h-full ${item.color} rounded-full`}
                         style={{
-                          width: `${(item.count / compatibilityData.reduce((sum, d) => sum + d.count, 0)) * 100}%`,
+                          width: `${percentage}%`,
                         }}
                       ></div>
                     </div>
@@ -308,137 +365,21 @@ export default function AdminDashboard() {
                     </span>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
+            {totalCompatibilityCount === 0 && (
+              <div className="text-center py-4 text-gray-500">
+                No compatibility data available. Run allocation first.
+              </div>
+            )}
           </div>
-
-          {/* AI Performance Metrics */}
-          {/*<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <MetricCard
-              icon={<Target className="w-6 h-6" />}
-              title="AI Matching Accuracy"
-              value={`${stats.aiAccuracy}%`}
-              description="Based on historical allocation success"
-              trend="+2.3%"
-              color="green"
-            />
-            <MetricCard
-              icon={<Zap className="w-6 h-6" />}
-              title="Processing Speed"
-              value="42 sec/match"
-              description="Average time per student"
-              trend="-15% faster"
-              color="blue"
-            />
-            <MetricCard
-              icon={<Shield className="w-6 h-6" />}
-              title="Conflict Reduction"
-              value="87%"
-              description="Compared to manual allocation"
-              trend="+12% improvement"
-              color="purple"
-            />
-            <MetricCard
-              icon={<Calendar className="w-6 h-6" />}
-              title="Last Allocation"
-              value={new Date(allocationStatus.lastRun).toLocaleDateString()}
-              description={`Generated ${allocationStatus.matchesGenerated} matches`}
-              trend=""
-              color="orange"
-            />
-          </div>*/}
-        </div>
-
-        {/* Right Column: Quick Actions & Insights */}
-        <div className="space-y-8">
-          {/* Quick Actions */}
-          {/*<div className="bg-white rounded-2xl shadow p-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">
-              Quick Actions
-            </h3>
-            <div className="space-y-3">
-              <Link
-                href="/admin/students"
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <Users className="w-5 h-5 text-blue-500" />
-                <div>
-                  <p className="font-medium text-gray-800">Manage Students</p>
-                  <p className="text-sm text-gray-500">
-                    View and edit student profiles
-                  </p>
-                </div>
-              </Link>
-              <Link
-                href="/admin/hostels"
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <Home className="w-5 h-5 text-green-500" />
-                <div>
-                  <p className="font-medium text-gray-800">Hostel Management</p>
-                  <p className="text-sm text-gray-500">
-                    Configure rooms and blocks
-                  </p>
-                </div>
-              </Link>
-              <button className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-                <Brain className="w-5 h-5 text-purple-500" />
-                <div className="text-left">
-                  <p className="font-medium text-gray-800">
-                    Configure AI Settings
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Adjust matching parameters
-                  </p>
-                </div>
-              </button>
-              <button className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-                <BarChart3 className="w-5 h-5 text-orange-500" />
-                <div className="text-left">
-                  <p className="font-medium text-gray-800">Generate Reports</p>
-                  <p className="text-sm text-gray-500">
-                    Detailed allocation analysis
-                  </p>
-                </div>
-              </button>
-            </div>
-          </div>*/}
-
-          {/* System Status */}
-          {/*<div className="bg-white rounded-2xl shadow p-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">
-              System Status
-            </h3>
-            <div className="space-y-4">
-              <StatusItem
-                label="Database Connection"
-                status="online"
-                description="Connected to PostgreSQL"
-              />
-              <StatusItem
-                label="AI Service"
-                status="online"
-                description="OpenAI API operational"
-              />
-              <StatusItem
-                label="Email Service"
-                status="online"
-                description="Notifications enabled"
-              />
-              <StatusItem
-                label="Backup System"
-                status="warning"
-                description="Last backup: 2 days ago"
-              />
-            </div>
-          </div>*/}
         </div>
       </div>
     </div>
   );
 }
 
-// Component: Stat Card
+// Component: Stat Card (keep as is from your original)
 function StatCard({
   icon,
   title,
@@ -486,101 +427,6 @@ function StatCard({
       )}
       <p className="text-gray-600 mb-2">{title}</p>
       {change && <p className="text-sm text-gray-500">{change}</p>}
-    </div>
-  );
-}
-
-// Component: Metric Card
-function MetricCard({
-  icon,
-  title,
-  value,
-  description,
-  trend,
-  color,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  value: string;
-  description: string;
-  trend: string;
-  color: string;
-}) {
-  const colorClasses = {
-    green: "text-green-600 bg-green-50",
-    blue: "text-blue-600 bg-blue-50",
-    purple: "text-purple-600 bg-purple-50",
-    orange: "text-orange-600 bg-orange-50",
-  };
-
-  return (
-    <div className="bg-white rounded-xl shadow p-5">
-      <div className="flex items-center gap-3 mb-4">
-        <div
-          className={`w-10 h-10 rounded-lg ${colorClasses[color as keyof typeof colorClasses]} flex items-center justify-center`}
-        >
-          {icon}
-        </div>
-        <div>
-          <h4 className="font-semibold text-gray-800">{title}</h4>
-          <p className="text-sm text-gray-500">{description}</p>
-        </div>
-      </div>
-      <div className="flex items-end justify-between">
-        <span className="text-2xl font-bold text-gray-800">{value}</span>
-        {trend && (
-          <span
-            className={`text-sm font-medium ${colorClasses[color as keyof typeof colorClasses]} px-2 py-1 rounded`}
-          >
-            {trend}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Component: Status Item
-function StatusItem({
-  label,
-  status,
-  description,
-}: {
-  label: string;
-  status: "online" | "warning" | "error";
-  description: string;
-}) {
-  const statusConfig = {
-    online: {
-      color: "text-green-500",
-      bg: "bg-green-100",
-      label: "Online",
-    },
-    warning: {
-      color: "text-yellow-500",
-      bg: "bg-yellow-100",
-      label: "Warning",
-    },
-    error: {
-      color: "text-red-500",
-      bg: "bg-red-100",
-      label: "Error",
-    },
-  };
-
-  const config = statusConfig[status];
-
-  return (
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="font-medium text-gray-800">{label}</p>
-        <p className="text-sm text-gray-500">{description}</p>
-      </div>
-      <span
-        className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.color}`}
-      >
-        {config.label}
-      </span>
     </div>
   );
 }

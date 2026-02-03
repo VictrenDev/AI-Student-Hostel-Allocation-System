@@ -14,6 +14,8 @@ import {
 import { getAllHostelsWithRooms } from "@/src/actions/admin/get-hostels";
 import { allocateStudentsAction } from "@/src/actions/admin/allocation";
 import GenerateAITraitsButton from "../ai-traits-button";
+import { deleteHostelAction } from "@/src/actions/admin/detele-hostels";
+import { toast } from "sonner";
 
 type Room = {
   id: number;
@@ -96,11 +98,10 @@ export default function HostelsPage() {
   const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this hostel?")) {
       try {
-        const res = await fetch(`/api/admin/hostels/${id}`, {
-          method: "DELETE",
-        });
-        if (res.ok) {
+        const res = await deleteHostelAction(id)
+        if (res.success) {
           fetchHostels();
+          toast.success(res.message)
         }
       } catch (error) {
         console.error(error);

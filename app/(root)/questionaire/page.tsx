@@ -12,42 +12,7 @@ export default function HostelQuestionnaire() {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  // const router = useRouter();
-  // const [blocked, setBlocked] = useState(false);
 
-  // useEffect(() => {
-  //   console.log("=== DEBUG COOKIE CHECK ===");
-  //   console.log("All cookies:", document.cookie);
-  //   console.log(
-  //     "Has questionnaire_submitted cookie:",
-  //     document.cookie.includes("questionnaire_submitted"),
-  //   );
-
-  //   // Check specific cookie
-  //   const cookieValue = document.cookie
-  //     .split("; ")
-  //     .find((row) => row.startsWith("questionnaire_submitted="))
-  //     ?.split("=")[1];
-
-  //   console.log("Cookie value:", cookieValue);
-
-  //   if (cookieValue === "true") {
-  //     console.log("✅ Cookie found! Redirecting...");
-  //     router.push("/status");
-  //   } else {
-  //     console.log("❌ Cookie not found or not 'true'");
-
-  //     // Check API as backup
-  //     fetch("/api/check-questionnaire", { credentials: "include" })
-  //       .then((res) => res.json())
-  //       .then((data) => {
-  //         console.log("API response:", data);
-  //         if (data.hasSubmitted) {
-  //           router.push("/status");
-  //         }
-  //       });
-  //   }
-  // }, [router]);
   const [formData, setFormData] = useState({
     // Habits
     sleepSchedule: "",
