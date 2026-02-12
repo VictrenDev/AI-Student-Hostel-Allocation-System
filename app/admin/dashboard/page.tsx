@@ -18,6 +18,7 @@ import {
   Target,
   Shield,
   Zap,
+  UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import { allocateStudentsAction } from "@/src/actions/admin/allocation";
@@ -36,6 +37,7 @@ export default function AdminDashboard() {
     averageCompatibility: 0,
     aiAccuracy: 92,
   });
+  const [generatingStudents, setGeneratingStudents] = useState(false)
 
   const [allocationStatus, setAllocationStatus] = useState({
     status: "ready",
@@ -96,7 +98,7 @@ export default function AdminDashboard() {
         { score: "60-69%", count: safeDistribution["60-69%"], color: "bg-orange-500" },
         { score: "Below 60%", count: safeDistribution["Below 60%"], color: "bg-red-500" },
       ];
-      console.log("compatibilityStats:", compatibilityStats);
+
 
       // Calculate students with questionnaire
       const withQuestionnaire = students.filter(s => s.hasQuestionnaire).length;
@@ -129,39 +131,123 @@ export default function AdminDashboard() {
     }
   };
 
+  // const runAllocation = async () => {
+  //   setAllocationStatus({
+  //     ...allocationStatus,
+  //     status: "running",
+  //   });
+
+  //   try {
+  //     // Run AI traits generation and allocation
+  //     const aiTraitsResults = await generateAITraitsForAllUsers();
+  //     const allocationResult = await allocateStudentsAction();
+
+  //     setAllocationStatus(prev => ({
+  //       ...prev,
+  //       status: "completed",
+  //       lastRun: new Date().toISOString(),
+  //       estimatedTime: "1 minute",
+  //       matchesGenerated: aiTraitsResults?.processed || 0,
+  //     }));
+
+  //     // Refresh dashboard data after allocation
+  //     setTimeout(() => {
+  //       fetchDashboardData();
+  //     }, 1000);
+
+  //   } catch (error) {
+  //     console.error("Allocation failed:", error);
+  //     setAllocationStatus(prev => ({
+  //       ...prev,
+  //       status: "error",
+  //     }));
+  //   }
+  // };
   const runAllocation = async () => {
-    setAllocationStatus({
-      ...allocationStatus,
+    setAllocationStatus(prev => ({
+      ...prev,
       status: "running",
-    });
+      estimatedTime: "Calculating...",
+    }));
+
+    const startTime = Date.now();
+    let processedStudents = 0;
 
     try {
-      // Run AI traits generation and allocation
-      const aiTraitsResults = await generateAITraitsForAllUsers();
-      const allocationResult = await allocateStudentsAction();
+      // 1️⃣ Generate AI traits for all users with progress callback
+      // const aiTraitsResults = await generateAITraitsForAllUsers((index: number, total: number) => {
+      //   processedStudents = index + 1;
+
+      //   const elapsed = Date.now() - startTime; // ms
+      //   const remainingMs = (elapsed / processedStudents) * (total - processedStudents);
+      //   const remainingSec = Math.round(remainingMs / 1000);
+
+      //   setAllocationStatus(prev => ({
+      //     ...prev,
+      //     estimatedTime:
+      //       remainingSec < 60
+      //         ? `${remainingSec} sec`
+      //         : `${Math.floor(remainingSec / 60)} min ${remainingSec % 60} sec`,
+      //   }));
+      // });
+
+      // 2️⃣ Allocate students
+      // const allocationResult = await allocateStudentsAction((index: number, total: number) => {
+      //   processedStudents = index + 1;
+
+      //   const elapsed = Date.now() - startTime; // ms
+      //   const remainingMs = (elapsed / processedStudents) * (total - processedStudents);
+      //   const remainingSec = Math.round(remainingMs / 1000);
+
+      //   setAllocationStatus(prev => ({
+      //     ...prev,
+      //     estimatedTime:
+      //       remainingSec < 60
+      //         ? `${remainingSec} sec`
+      //         : `${Math.floor(remainingSec / 60)} min ${remainingSec % 60} sec`,
+      //   }));
+      // });
+
+      const totalElapsed = Date.now() - startTime;
+      const totalSeconds = Math.round(totalElapsed / 1000);
 
       setAllocationStatus(prev => ({
         ...prev,
         status: "completed",
         lastRun: new Date().toISOString(),
-        estimatedTime: "1 minute",
+        estimatedTime: totalSeconds < 60
+          ? `${totalSeconds} sec`
+          : `${Math.floor(totalSeconds / 60)} min ${totalSeconds % 60} sec`,
         matchesGenerated: aiTraitsResults?.processed || 0,
       }));
 
-      // Refresh dashboard data after allocation
-      setTimeout(() => {
-        fetchDashboardData();
-      }, 1000);
+      // Refresh dashboard data
+      fetchDashboardData();
 
     } catch (error) {
       console.error("Allocation failed:", error);
       setAllocationStatus(prev => ({
         ...prev,
         status: "error",
+        estimatedTime: "Failed",
       }));
     }
   };
 
+  async function generateStudents() {
+    setGeneratingStudents(true)
+    setLoading(true)
+    try {
+      await seedStudentsAction(10)
+      fetchDashboardData()
+    }
+    catch (e) {
+      console.log(e)
+    } finally {
+      setLoading(false)
+      setGeneratingStudents(false)
+    }
+  }
   const getStatusConfig = () => {
     switch (allocationStatus.status) {
       case "running":
@@ -229,6 +315,19 @@ export default function AdminDashboard() {
             >
               <RefreshCw className="w-4 h-4" />
               Refresh
+            </button>
+
+            <button
+              onClick={generateStudents}
+              disabled={generatingStudents}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed"
+            >
+              {generatingStudents ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <UserPlus className="w-4 h-4" />
+              )}
+              {generatingStudents ? "Generating..." : "Generate Students"}
             </button>
           </div>
         </div>

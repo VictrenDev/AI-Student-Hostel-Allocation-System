@@ -50,7 +50,7 @@ export async function seedStudentsAction(totalNumberOfSeededStudents: number) {
       // Insert student
       await db.insert(students).values({
         uuid: studentUUID,
-        email: `student${i}@school.edu`,
+        email: `student${randomUUID().replace(/-/g, "").slice(0, 7)}@school.edu`,
         name: `${gender === "male" ? "John" : "Jane"} Student ${i}`,
         gender,
         level: randomFrom(levels),
