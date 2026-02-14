@@ -175,38 +175,10 @@ export default function AdminDashboard() {
 
     try {
       // 1️⃣ Generate AI traits for all users with progress callback
-      // const aiTraitsResults = await generateAITraitsForAllUsers((index: number, total: number) => {
-      //   processedStudents = index + 1;
-
-      //   const elapsed = Date.now() - startTime; // ms
-      //   const remainingMs = (elapsed / processedStudents) * (total - processedStudents);
-      //   const remainingSec = Math.round(remainingMs / 1000);
-
-      //   setAllocationStatus(prev => ({
-      //     ...prev,
-      //     estimatedTime:
-      //       remainingSec < 60
-      //         ? `${remainingSec} sec`
-      //         : `${Math.floor(remainingSec / 60)} min ${remainingSec % 60} sec`,
-      //   }));
-      // });
+      const aiTraitsResults = await generateAITraitsForAllUsers();
 
       // 2️⃣ Allocate students
-      // const allocationResult = await allocateStudentsAction((index: number, total: number) => {
-      //   processedStudents = index + 1;
-
-      //   const elapsed = Date.now() - startTime; // ms
-      //   const remainingMs = (elapsed / processedStudents) * (total - processedStudents);
-      //   const remainingSec = Math.round(remainingMs / 1000);
-
-      //   setAllocationStatus(prev => ({
-      //     ...prev,
-      //     estimatedTime:
-      //       remainingSec < 60
-      //         ? `${remainingSec} sec`
-      //         : `${Math.floor(remainingSec / 60)} min ${remainingSec % 60} sec`,
-      //   }));
-      // });
+      const allocationResult = await allocateStudentsAction();
 
       const totalElapsed = Date.now() - startTime;
       const totalSeconds = Math.round(totalElapsed / 1000);

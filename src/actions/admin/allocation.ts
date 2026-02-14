@@ -15,9 +15,9 @@
 
 import { runAllocation } from "@/src/actions/admin/run-allocation";
 
-export async function allocateStudentsAction(onProgress?: (index: number, total: number) => void) {
+export async function allocateStudentsAction() {
   try {
-    await runAllocation(onProgress); // make runAllocation report progress
+    await runAllocation(); // make runAllocation report progress
   } catch (error) {
     throw new Error("Something went wrong in allocating students");
   }
