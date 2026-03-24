@@ -1,3 +1,15 @@
+# INSTALLATION 
+- Download Node js runtime from [NodeJs](https://nodejs.org/en/download) and follow installation process.
+- Verify installation by typing ```node -v ``` in command prompt.
+- Verify if npm is installed by running ```npm -v``` in command prompt.
+- Download the repo as zip file from github as [AI Allocation System](https://github.com/VictrenDev/AI-Student-Hostel-Allocation-System) i.e. on github, click on ```code``` and ```download zip```
+- Once it's done downloading, extract the file to the folder of preference and open the folder with VS Code.
+- Create a ```.env``` file in the root of the folder and paste in the environment variables.
+- Open terminal in VS Code and run ```npm install``` to install all the dependencies.
+- Once it's done, run these codes one after the job, ```npm drizzle-kit generate``` then ```npm drizzle-kit migrate```
+- Once everything is installed, run ```npm run dev```. You should be up and running after these.
+
+
 # AI Student Hostel Allocation System
 
 ## Overview
