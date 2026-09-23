@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@libsql/client": "^0.18.0",
     "better-sqlite3": "^13.0.3",
+    "dotenv": "^18.0.3",
     "drizzle-orm": "^0.45.1",
     "lucide-react": "^0.561.0",
     "next": "16.0.10",
