@@ -19,6 +19,7 @@ import {
   Shield,
   Zap,
   UserPlus,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { allocateStudentsAction } from "@/src/actions/admin/allocation";
@@ -26,6 +27,7 @@ import { generateAITraitsForAllUsers } from "@/src/lib/ai/generate-ai-traits";
 import { getAdminStudents } from "@/src/actions/admin/students";
 import { getCompatibilityStats } from "@/src/actions/admin/compatibility";
 import { seedStudentsAction } from "@/src/scripts/seed-students";
+import { clearDatabaseAction } from "@/src/actions/admin/clear-database";
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
@@ -54,6 +56,22 @@ export default function AdminDashboard() {
     { score: "60-69%", count: 0, color: "bg-orange-500" },
     { score: "Below 60%", count: 0, color: "bg-red-500" },
   ]);
+  const [clearingDb, setClearingDb] = useState(false);
+
+  async function clearDatabase() {
+    if (!confirm("This will delete ALL students, hostels, rooms, and allocations. Continue?")) return;
+    setClearingDb(true);
+    setLoading(true);
+    try {
+      await clearDatabaseAction();
+      fetchDashboardData();
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoading(false);
+      setClearingDb(false);
+    }
+  }
 
   useEffect(() => {
     fetchDashboardData();
@@ -210,7 +228,7 @@ export default function AdminDashboard() {
     setGeneratingStudents(true)
     setLoading(true)
     try {
-      await seedStudentsAction(10)
+      await seedStudentsAction(20)
       fetchDashboardData()
     }
     catch (e) {
@@ -300,6 +318,20 @@ export default function AdminDashboard() {
                 <UserPlus className="w-4 h-4" />
               )}
               {generatingStudents ? "Generating..." : "Generate Students"}
+            </button>
+
+            <button
+              onClick={clearDatabase}
+              disabled={clearingDb}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed"
+            >
+
+              {clearingDb ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+              {clearingDb ? "Clearing..." : "Clear Database"}
             </button>
           </div>
         </div>
